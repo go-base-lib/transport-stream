@@ -31,3 +31,14 @@ func BytesToInt[T IntType](b []byte) (T, error) {
 	}
 	return r, nil
 }
+
+func ByteToBool(b byte) bool {
+	return b > 0
+}
+
+func BoolToByte(b bool) byte {
+	if b {
+		return 1
+	}
+	return 0
+}
