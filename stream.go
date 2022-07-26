@@ -68,6 +68,14 @@ func (s *Stream) WriteError(err *ErrInfo) error {
 	}
 }
 
+func (s *Stream) WriteEndMsg() error {
+	return s.WriteEndMsgWithData(nil)
+}
+
+func (s *Stream) WriteEndMsgWithData(data []byte) error {
+	return s.WriteMsg(data, MsgFlagEnd)
+}
+
 // WriteMsg 向对端通道写入数据, data 为写入的内容
 // flag为内容标识, 0 为错误消息, 1 为正确消息, 非0和1代表一次消息的结束
 func (s *Stream) WriteMsg(data []byte, flag MsgFlag) error {
