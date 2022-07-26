@@ -6,7 +6,15 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gogo/protobuf/proto"
+	"io"
 )
+
+func selectIoEofErr(err error, otherStr string, args ...any) error {
+	if err == io.EOF {
+		return err
+	}
+	return fmt.Errorf(otherStr, args)
+}
 
 type Stream struct {
 	rw *bufio.ReadWriter
@@ -85,17 +93,17 @@ func (s *Stream) WriteMsg(data []byte, flag MsgFlag) error {
 		return fmt.Errorf("转换数据长度失败: %s", err.Error())
 	}
 	if _, err = s.rw.Write(lenBytes); err != nil {
-		return fmt.Errorf("向对端发送数据长度失败: %s", err.Error())
+		return selectIoEofErr(err, "向对端发送数据长度失败: %s", err.Error())
 	}
 	if err = s.rw.WriteByte(byte(flag)); err != nil {
-		return fmt.Errorf("向对端发送成功标识失败: %s", err.Error())
+		return selectIoEofErr(err, "向对端发送成功标识失败: %s", err.Error())
 	}
 	if _, err = s.rw.Write(data); err != nil {
-		return fmt.Errorf("向对端发送数据内容失败: %s", err.Error())
+		return selectIoEofErr(err, "向对端发送数据内容失败: %s", err.Error())
 	}
 
 	if err = s.rw.Flush(); err != nil {
-		return fmt.Errorf("数据通道缓存刷新失败: %s", err.Error())
+		return selectIoEofErr(err, "数据通道缓存刷新失败: %s", err.Error())
 	}
 	return nil
 }
@@ -103,7 +111,7 @@ func (s *Stream) WriteMsg(data []byte, flag MsgFlag) error {
 func (s *Stream) ReceiveMsg() ([]byte, error) {
 	lenBuf, err := receiveBytesByLen(8, s.rw.Reader)
 	if err != nil {
-		return nil, fmt.Errorf("读取数据长度失败: %s", err.Error())
+		return nil, selectIoEofErr(err, "读取数据长度失败: %s", err.Error())
 	}
 
 	dataLen, err := BytesToInt[int64](lenBuf)
@@ -113,7 +121,7 @@ func (s *Stream) ReceiveMsg() ([]byte, error) {
 
 	data, err := receiveBytesByLen(dataLen, s.rw.Reader)
 	if err != nil {
-		return nil, fmt.Errorf("获取数据内容失败: %s", err.Error())
+		return nil, selectIoEofErr(err, "获取数据内容失败: %s", err.Error())
 	}
 
 	msgFlag := MsgFlag(data[0])
