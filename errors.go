@@ -15,6 +15,10 @@ func (e ErrCode) New(msg string) *ErrInfo {
 	}
 }
 
+func (e ErrCode) Newf(msg string, args ...any) *ErrInfo {
+	return e.New(fmt.Sprintf(msg, args...))
+}
+
 func (e ErrCode) NewWithData(msg string, data any) (*ErrInfo, error) {
 	marshal, err := json.Marshal(data)
 	if err != nil {
@@ -25,6 +29,10 @@ func (e ErrCode) NewWithData(msg string, data any) (*ErrInfo, error) {
 		Msg:     msg,
 		RawData: marshal,
 	}, nil
+}
+
+func (e ErrCode) NewWithDataf(data any, msg string, args ...any) (*ErrInfo, error) {
+	return e.NewWithData(fmt.Sprintf(msg, args...), data)
 }
 
 func (e ErrCode) Equal(err error) bool {
