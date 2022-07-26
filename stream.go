@@ -61,7 +61,7 @@ func (s *Stream) ReceiveProtoMsg(msg proto.Message) error {
 }
 
 func (s *Stream) WriteError(err *ErrInfo) error {
-	if marshal, e := err.Marshal(); err != nil {
+	if marshal, e := err.Marshal(); e != nil {
 		return fmt.Errorf("序列化异常信息失败: %s", e.Error())
 	} else {
 		return s.WriteMsg(marshal, MsgFlagErr)
