@@ -85,6 +85,10 @@ func (s *Stream) WriteMsg(data []byte, flag MsgFlag) error {
 	if _, err = s.rw.Write(data); err != nil {
 		return fmt.Errorf("向对端发送数据内容失败: %s", err.Error())
 	}
+
+	if err = s.rw.Flush(); err != nil {
+		return fmt.Errorf("数据通道缓存刷新失败: %s", err.Error())
+	}
 	return nil
 }
 
