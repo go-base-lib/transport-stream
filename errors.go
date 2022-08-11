@@ -77,7 +77,7 @@ func (e *ErrInfo) UnmarshalData(i any) error {
 	return nil
 }
 
-func (e *ErrInfo) Write(stream *Stream) error {
+func (e *ErrInfo) WriteTo(stream *Stream) error {
 	return stream.WriteError(e)
 }
 
