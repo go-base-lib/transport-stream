@@ -77,6 +77,10 @@ func (e *ErrInfo) UnmarshalData(i any) error {
 	return nil
 }
 
+func (e *ErrInfo) Write(stream *Stream) error {
+	return stream.WriteError(e)
+}
+
 func ErrConvert(e error) (*ErrInfo, bool) {
 	err, ok := e.(*ErrInfo)
 	return err, ok
