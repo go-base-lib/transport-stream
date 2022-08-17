@@ -17,7 +17,8 @@ func selectIoEofErr(err error, otherStr string, args ...any) error {
 }
 
 type Stream struct {
-	rw *bufio.ReadWriter
+	rw  *bufio.ReadWriter
+	err error
 }
 
 var StreamIsEnd = errors.New("本次消息已到达尾端")
@@ -29,6 +30,42 @@ const (
 	MsgFlagSuccess
 	MsgFlagEnd
 )
+
+func (s *Stream) errWrapper(fn func() error) *Stream {
+	if s.err != nil {
+		return s
+	}
+	s.err = fn()
+	return s
+}
+
+func (s *Stream) Error() error {
+	return s.err
+}
+
+func (s *Stream) WriteProtoMsgStream(msg proto.Message) *Stream {
+	return s.errWrapper(func() error {
+		return s.WriteProtoMsg(msg)
+	})
+}
+
+func (s *Stream) WriteJsonMsgStream(msg any) *Stream {
+	return s.errWrapper(func() error {
+		return s.WriteJsonMsg(msg)
+	})
+}
+
+func (s *Stream) WriteErrorStream(err *ErrInfo) *Stream {
+	return s.errWrapper(func() error {
+		return s.WriteError(err)
+	})
+}
+
+func (s *Stream) WriteMsgStream(data []byte, flag MsgFlag) *Stream {
+	return s.errWrapper(func() error {
+		return s.WriteMsg(data, flag)
+	})
+}
 
 func (s *Stream) WriteJsonMsg(msg any) error {
 	if marshal, err := json.Marshal(msg); err != nil {
