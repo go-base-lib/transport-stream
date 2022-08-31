@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/gogo/protobuf/proto"
 	"io"
+	"net"
 )
 
 func selectIoEofErr(err error, otherStr string, args ...any) error {
@@ -198,4 +199,8 @@ func NewStream(rw *bufio.ReadWriter) *Stream {
 	return &Stream{
 		rw: rw,
 	}
+}
+
+func NewStreamByConn(conn net.Conn) *Stream {
+	return NewStream(bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn)))
 }
